@@ -1,0 +1,8 @@
+body{
+    background-color: rgb(220, 238, 243);
+}
+
+.game-choice-bloc:hover{
+    cursor: pointer;
+    transform: scale(1.1);
+}
