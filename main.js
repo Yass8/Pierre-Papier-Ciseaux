@@ -1,89 +1,103 @@
+// Sélection des éléments DOM
 const blocOrdi = document.querySelector('.ordi');
 const blocPlayer = document.querySelectorAll('.game-choice-bloc');
 const blocResult = document.getElementById('result');
 
+// Ajout d'un écouteur d'événements à chaque bloc joueur
 blocPlayer.forEach(element => {
-    
-    element.addEventListener('click', (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-
-        blocPlayer.forEach(el => {
-            const cardChild = el.querySelector('img');
-            if (cardChild) {
-                cardChild.style.border = 'none';
-            }
-        });
-        //element.querySelector('card').style.border = '1px solid green';
-        const cardChild = element.querySelector('img');
-        if (cardChild) {
-            cardChild.style.border = '1px solid green';
-        }
-        const choice = element.dataset.choice;
-        console.log(choice);
-        jouer(choice)
-        
-    })
+    element.addEventListener('click', handlePlayerChoice);
 });
 
+// Gestion du clic du joueur
+function handlePlayerChoice(event) {
+    event.preventDefault();
+    event.stopPropagation();
 
-img = "";
+    resetBorders();
+    highlightSelectedChoice(event.currentTarget);
 
-function jouer(playerChoice) {
-    
-    result(compare(playerChoice,camputerChoice()));
+    const playerChoice = event.currentTarget.dataset.choice;
+    console.log(playerChoice);
+
+    jouer(playerChoice);
 }
 
-function camputerChoice(){
-    const choices = ["pierre","papier","ciseaux"];
-    const imagesUrl = {
-        "pierre" : "./images/rock.png",
-        "papier" : "./images/paper.png",
-        "ciseaux" : "./images/scissors.png"
-    }
-    let ramdom = Math.floor(Math.random()*3);
-    let choix = choices[ramdom];
+// Réinitialise les bordures des cartes
+function resetBorders() {
+    blocPlayer.forEach(el => {
+        const cardChild = el.querySelector('img');
+        if (cardChild) {
+            cardChild.style.border = 'none';
+        }
+    });
+}
 
-    img = imagesUrl[choix];
-    console.log("url : " + img);
-    blocOrdi.innerHTML = "";
+// Met en évidence le choix sélectionné
+function highlightSelectedChoice(element) {
+    const cardChild = element.querySelector('img');
+    if (cardChild) {
+        cardChild.style.border = '1px solid green';
+    }
+}
+
+// Logique principale du jeu
+function jouer(playerChoice) {
+    const computerChoice = getComputerChoice();
+    const gameResult = compareChoices(playerChoice, computerChoice);
+    displayResult(gameResult);
+}
+
+// Génère le choix aléatoire de l'ordinateur
+function getComputerChoice() {
+    const choices = ["pierre", "papier", "ciseaux"];
+    const imagesUrl = {
+        "pierre": "./images/pierre.png",
+        "papier": "./images/papier.png",
+        "ciseaux": "./images/ciseaux.png"
+    };
+
+    const randomIndex = Math.floor(Math.random() * choices.length);
+    const computerChoice = choices[randomIndex];
+
+    console.log("URL : " + imagesUrl[computerChoice]);
+    updateComputerDisplay(computerChoice, imagesUrl[computerChoice]);
+
+    return computerChoice;
+}
+
+// Met à jour l'affichage du choix de l'ordinateur
+function updateComputerDisplay(choice, imageUrl) {
     blocOrdi.innerHTML = `
         <div class="card">
-            <img src="./images/${choix}.png"  class="card-img-top" alt="${choix}">
+            <img src="${imageUrl}" class="card-img-top" alt="${choice}">
         </div>
-        <p class="text-center">${choix}</p>
+        <p class="text-center">${choice}</p>
     `;
-    return choix;
 }
 
-function compare(choice1, choice2) {
-    // Cas où le joueur gagne
-    if (choice1 === "pierre" && choice2 === "ciseaux") {
-        return "Vous avez choisi Pierre. L'ordinateur a choisi Ciseaux. Pierre écrase les Ciseaux, vous avez gagné !";
-    } else if (choice1 === "ciseaux" && choice2 === "papier") {
-        return "Vous avez choisi Ciseaux. L'ordinateur a choisi Papier. Les Ciseaux coupent le Papier, vous avez gagné !";
-    } else if (choice1 === "papier" && choice2 === "pierre") {
-        return "Vous avez choisi Papier. L'ordinateur a choisi Pierre. Le Papier enveloppe la Pierre, vous avez gagné !";
+// Compare les choix du joueur et de l'ordinateur pour déterminer le résultat
+function compareChoices(playerChoice, computerChoice) {
+    const winConditions = {
+        "pierre": "ciseaux",
+        "ciseaux": "papier",
+        "papier": "pierre"
+    };
+
+    if (playerChoice === computerChoice) {
+        return `Vous avez choisi ${playerChoice}. L'ordinateur a choisi ${computerChoice} aussi. C'est une égalité !`;
     }
 
-    // Cas où l'ordinateur gagne
-    if (choice2 === "pierre" && choice1 === "ciseaux") {
-        return "Vous avez choisi Ciseaux. L'ordinateur a choisi Pierre. La Pierre écrase les Ciseaux, vous avez perdu.";
-    } else if (choice2 === "ciseaux" && choice1 === "papier") {
-        return "Vous avez choisi Papier. L'ordinateur a choisi Ciseaux. Les Ciseaux coupent le Papier, vous avez perdu.";
-    } else if (choice2 === "papier" && choice1 === "pierre") {
-        return "Vous avez choisi Pierre. L'ordinateur a choisi Papier. Le Papier enveloppe la Pierre, vous avez perdu.";
+    if (winConditions[playerChoice] === computerChoice) {
+        return `Vous avez choisi ${playerChoice}. L'ordinateur a choisi ${computerChoice}. Vous avez gagné !`;
     }
 
-    // Cas d'égalité
-    if (choice1 === choice2) {
-        return `Vous avez choisi ${choice1}. L'ordinateur a choisi ${choice2} aussi. C'est une égalité !`;
-    }
+    return `Vous avez choisi ${playerChoice}. L'ordinateur a choisi ${computerChoice}. Vous avez perdu.`;
 }
 
-function result(result) {
+// Affiche le résultat du jeu
+function displayResult(resultText) {
     blocResult.innerHTML = '';
-    const para = document.createElement('p');
-    para.innerText = result
-    blocResult.appendChild(para)
+    const resultParagraph = document.createElement('p');
+    resultParagraph.innerText = resultText;
+    blocResult.appendChild(resultParagraph);
 }
